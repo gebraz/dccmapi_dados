@@ -302,14 +302,14 @@ def main():
                 st.download_button(
                     label="Download Excel",
                     data=buffer,
-                    file_name="dados.xlsx",
+                    file_name=f"dados_{docente_sel}.xlsx",
                     mime="application/vnd.ms-excel"
                 )
             else:
                 st.download_button(
                     label="Download Excel",
                     data=buffer,
-                    file_name=f"dados_{docente_sel}.xlsx",
+                    file_name=f"dados.xlsx",
                     mime="application/vnd.ms-excel"
                 )
 main()
