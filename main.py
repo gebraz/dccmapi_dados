@@ -187,7 +187,6 @@ def main():
         tipo_ori = st.radio("Tipo", 
                             options=['Todos', 'Tese', 'Dissertação', 'Especialização', 'IC', 'TCC',  'Outra'],                             
                             horizontal=True)
-        print(tipo_ori)
         
         if tipo_ori == 'Tese':
             filtro_ori = 'Tese de doutorado'
@@ -202,7 +201,6 @@ def main():
         if tipo_ori == 'Outra':
             filtro_ori = 'ORIENTACAO-DE-OUTRA-NATUREZA'
 
-        print(filtro_ori)
         
         if docente_sel != 'Todos':
             if tipo_ori == 'Todos':
@@ -296,7 +294,7 @@ def main():
                                             & (tecnica['ano'] <= int(ano_fim_sel) )].to_excel(writer, sheet_name='Técnica')
 
             # Close the Pandas Excel writer and output the Excel file to the buffer
-            writer.save()
+            writer.close()
 
             if docente_sel != 'Todos':
                 st.download_button(
