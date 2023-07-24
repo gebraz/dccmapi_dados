@@ -1,5 +1,8 @@
 import streamlit as st
 import pandas as pd
+import io
+
+buffer = io.BytesIO()
 
 st.set_page_config(page_title="DCCMAPI - AutoAvaliação", layout="wide")
 
@@ -37,7 +40,6 @@ producao_evento_colulm_config = {
     'doi': None
 }
 
-
 producao_periodico_todos_colulm_config = {
     'id_docente': None,
     'nome': 'Docente', 
@@ -68,7 +70,6 @@ producao_evento_todos_colulm_config = {
     'doi': None
 }
 
-
 tecnica_colum_config = {
     'id_docente': None,
     'nome': None,     
@@ -90,7 +91,6 @@ tecnica_todos_colum_config = {
     'outras_informacoes': None,
     'autores': None
 }
-
 
 orientacao_colum_config = {
     'id_docente': None,
@@ -128,16 +128,12 @@ def loadData():
 
     return docentes, producao, tecnica, orientacao
 
-def refresh():
-    print("refresh")
-
 def main():
     docentes, producao, tecnica, orientacao = loadData()
     filtro_ori  = ''
     
     st.header("DCCMAPI - Auto Avaliação")
  
-   
     [c1, c2, c3, c4] = st.columns([4, 1, 1, 1])
     with c1:
         docente_sel = st.selectbox("Selecione um Docente:",options=(docentes.nome))            
@@ -147,18 +143,15 @@ def main():
     with c3:
         ano_fim_sel = st.text_input("Ano final", value="2022")
 
+
     #dashboard, 
-    prod_tab, ori_tab, tec_tab = st.tabs(['Produção', 'Orientações', 'Técnicas'])
+    prod_tab, ori_tab, tec_tab, download = st.tabs(['Produção', 'Orientações', 'Técnicas', 'Download'])
 
     #with dashboard:
     #    st.write('Estatísticas') 
     #    qualis_periodicos = producao.loc[(producao.tipo=='ARTIGO-PUBLICADO') | (producao.tipo=='ARTIGO-ACEITO-PARA-PUBLICACAO')].groupby(['qualis'])['qualis'].count()
     #    qualis_periodicos_ano = producao.loc[(producao.tipo=='ARTIGO-PUBLICADO') | (producao.tipo=='ARTIGO-ACEITO-PARA-PUBLICACAO')].groupby(['qualis','ano'])['qualis', 'ano'].count()
     #    st.dataframe(qualis_periodicos_ano)
-        
-
-        
-
     with prod_tab:
         st.write('Produção')
 
@@ -244,7 +237,81 @@ def main():
             st.dataframe(tecnica.loc [ (tecnica['ano'] >= int(ano_inicio_sel) )
                                         & (tecnica['ano'] <= int(ano_fim_sel) )], 
                                     column_config = tecnica_todos_colum_config)
+    with download:
+        
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            if docente_sel != 'Todos':
+                if  tipo_prod == 'Periódicos':                
+                    producao.loc [ (producao['nome'] == docente_sel) 
+                                            & (producao['ano'] >= int(ano_inicio_sel) )
+                                            & (producao['ano'] <= int(ano_fim_sel) ) 
+                                            & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
+                                            | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))].to_excel(writer, sheet_name='Produção')
+                else:
+                    producao.loc [ (producao['nome'] == docente_sel) 
+                                            & (producao['ano'] >= int(ano_inicio_sel) )
+                                            & (producao['ano'] <= int(ano_fim_sel) )                                         
+                                            & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )].to_excel(writer, sheet_name='Produção')
+            else:
+                if  tipo_prod == 'Periódicos':                
+                    producao.loc [(producao['ano'] >= int(ano_inicio_sel) )
+                                            & (producao['ano'] <= int(ano_fim_sel) ) 
+                                            & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
+                                            | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))].to_excel(writer, sheet_name='Produção')
+                else:
+                    producao.loc [ (producao['ano'] >= int(ano_inicio_sel) )
+                                            & (producao['ano'] <= int(ano_fim_sel) )                                         
+                                            & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )].to_excel(writer, sheet_name='Produção')
 
+
+            #producao.to_excel(writer, sheet_name='Produção')
+            #orientacao.to_excel(writer, sheet_name='Orientação')
+            if docente_sel != 'Todos':
+                if tipo_ori == 'Todos':
+                    orientacao.loc [ (orientacao['nome'] == docente_sel) 
+                                                & (orientacao['ano'] >= int(ano_inicio_sel) )
+                                                & (orientacao['ano'] <= int(ano_fim_sel) )].to_excel(writer, sheet_name='Orientação')
+                else: 
+                    orientacao.loc [ (orientacao['nome'] == docente_sel) 
+                                                & (orientacao['ano'] >= int(ano_inicio_sel) )
+                                                & (orientacao['ano'] <= int(ano_fim_sel)) 
+                                                & (orientacao['tipo'] == filtro_ori)].to_excel(writer, sheet_name='Orientação')
+            else:
+                if tipo_ori == 'Todos':
+                    orientacao.loc [ (orientacao['ano'] >= int(ano_inicio_sel) )
+                                                & (orientacao['ano'] <= int(ano_fim_sel) )].to_excel(writer, sheet_name='Orientação')
+                else: 
+                    orientacao.loc [ (orientacao['ano'] >= int(ano_inicio_sel) )
+                                                & (orientacao['ano'] <= int(ano_fim_sel)) 
+                                                & (orientacao['tipo'] == filtro_ori)].to_excel(writer, sheet_name='Orientação')
+                
+                
+            #tecnica.to_excel(writer, sheet_name='Técnica')
+            if docente_sel != 'Todos':
+                tecnica.loc [ (tecnica['nome'] == docente_sel) 
+                                                & (tecnica['ano'] >= int(ano_inicio_sel) )
+                                                & (tecnica['ano'] <= int(ano_fim_sel) )].to_excel(writer, sheet_name='Técnica')
+            else: 
+                tecnica.loc [ (tecnica['ano'] >= int(ano_inicio_sel) )
+                                            & (tecnica['ano'] <= int(ano_fim_sel) )].to_excel(writer, sheet_name='Técnica')
+
+            # Close the Pandas Excel writer and output the Excel file to the buffer
+            writer.save()
+
+            if docente_sel != 'Todos':
+                st.download_button(
+                    label="Download Excel",
+                    data=buffer,
+                    file_name="dados.xlsx",
+                    mime="application/vnd.ms-excel"
+                )
+            else:
+                st.download_button(
+                    label="Download Excel",
+                    data=buffer,
+                    file_name=f"dados_{docente_sel}.xlsx",
+                    mime="application/vnd.ms-excel"
+                )
 main()
 
 
