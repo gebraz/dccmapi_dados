@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import io
+import math
 
 buffer = io.BytesIO()
 
@@ -118,6 +119,59 @@ orientacao_todos_colum_config = {
     'natureza' : None    
 }
 
+projeto_colum_config = {
+    "id_docente": None, 
+    "nome": None,
+    "titulo": "Título", 
+    "ano_inicio": "Início",
+    "ano_fim": "Fim", 
+    "situacao": None,
+    "natureza": "Natureza", 
+    "qtd_graduacao": None, 
+    "qtd_especializacao": None, 
+    "qtd_mestrado": None, 
+    "qtd_doutorado": None, 
+    "integrantes": None, 
+    "financiador": "Financiadora", 
+    "responsavel": "Coord."
+}
+
+projeto_todos_colum_config = {
+    "id_docente": None, 
+    "nome": "Docente",
+    "titulo": "Título", 
+    "ano_inicio": "Início",
+    "ano_fim": "Fim", 
+    "situacao": None,
+    "natureza": "Natureza", 
+    "qtd_graduacao": None, 
+    "qtd_especializacao": None, 
+    "qtd_mestrado": None, 
+    "qtd_doutorado": None, 
+    "integrantes": None, 
+    "financiador": "Financiadora", 
+    "responsavel": "Coord."
+}
+
+vinculo_colum_config = {
+    "id_docente":None, 
+    "nome": None, 
+    "tipo": "Tipo",
+    "nome_instituicao": "Título", 
+    "ano_inicio": "Ano Início",
+    "ano_fim": "Ano Fim",
+    "outras_informacoes": "Outras Informações"
+}
+
+vinculo_todos_colum_config = {
+    "id_docente":None, 
+    "nome": "Docente", 
+    "tipo": "Tipo",
+    "nome_instituicao": "Título", 
+    "ano_inicio": "Ano Início",
+    "ano_fim": "Ano Fim",
+    "outras_informacoes": "Outras Informações"
+}
 
 @st.cache_data
 def loadData():  
@@ -125,11 +179,13 @@ def loadData():
     producao = pd.read_csv('producao.csv', delimiter=';')
     tecnica = pd.read_csv('tecnica.csv', delimiter=';')
     orientacao = pd.read_csv('orientacao.csv', delimiter=';')
+    projeto = pd.read_csv('projeto.csv', delimiter=';')
+    vinculo = pd.read_csv('vinculo.csv', delimiter=';')
 
-    return docentes, producao, tecnica, orientacao
+    return docentes, producao, tecnica, orientacao, projeto, vinculo
 
 def main():
-    docentes, producao, tecnica, orientacao = loadData()
+    docentes, producao, tecnica, orientacao, projeto, vinculo = loadData()
     filtro_ori  = ''
     
     st.header("DCCMAPI - Auto Avaliação")
@@ -145,13 +201,9 @@ def main():
 
 
     #dashboard, 
-    prod_tab, ori_tab, tec_tab, download = st.tabs(['Produção', 'Orientações', 'Técnicas', 'Download'])
+    prod_tab, ori_tab, proj_tab, tec_tab, vinc_tab, download = st.tabs(['Produção', 'Orientações', 'Projetos', 'Técnicas', 'Vinculos', 'Download'])
+        
 
-    #with dashboard:
-    #    st.write('Estatísticas') 
-    #    qualis_periodicos = producao.loc[(producao.tipo=='ARTIGO-PUBLICADO') | (producao.tipo=='ARTIGO-ACEITO-PARA-PUBLICACAO')].groupby(['qualis'])['qualis'].count()
-    #    qualis_periodicos_ano = producao.loc[(producao.tipo=='ARTIGO-PUBLICADO') | (producao.tipo=='ARTIGO-ACEITO-PARA-PUBLICACAO')].groupby(['qualis','ano'])['qualis', 'ano'].count()
-    #    st.dataframe(qualis_periodicos_ano)
     with prod_tab:
         st.write('Produção')
 
@@ -225,6 +277,27 @@ def main():
                                             & (orientacao['tipo'] == filtro_ori)], 
                                             column_config=orientacao_todos_colum_config)
 
+    with proj_tab:                
+        
+        if docente_sel != 'Todos':            
+            st.dataframe(projeto.loc [ (projeto['nome'] == docente_sel) &
+                                        (
+                                            (projeto['ano_fim'].isnull()) 
+                                            | 
+                                            ((projeto['ano_fim'] >= int(ano_inicio_sel))
+                                             &
+                                            (projeto['ano_fim'] <= int(ano_fim_sel)))
+                                        )], 
+                                    column_config = projeto_colum_config)
+        else: 
+            st.dataframe(projeto.loc [  (projeto['ano_fim'].isnull()) 
+                                            | 
+                                            ((projeto['ano_fim'] >= int(ano_inicio_sel))
+                                             &
+                                            (projeto['ano_fim'] <= int(ano_fim_sel)))
+                                    ], 
+                                    column_config = projeto_todos_colum_config)
+
     with tec_tab:
         if docente_sel != 'Todos':
             st.dataframe(tecnica.loc [ (tecnica['nome'] == docente_sel) 
@@ -235,6 +308,39 @@ def main():
             st.dataframe(tecnica.loc [ (tecnica['ano'] >= int(ano_inicio_sel) )
                                         & (tecnica['ano'] <= int(ano_fim_sel) )], 
                                     column_config = tecnica_todos_colum_config)
+            
+    with vinc_tab:
+        tipo_vinc = st.radio("Tipo", 
+                            options=['Todos', 'Revisor de periódico', 'Membro de corpo editorial', 'Membro de comitê assessor', 'Revisor de projeto de fomento'],     
+                            horizontal=True)
+        if tipo_vinc == 'Todos':
+            if docente_sel != 'Todos':
+                st.dataframe(vinculo.loc [ (vinculo['nome'] == docente_sel) 
+                                                & 
+                                                (
+                                                    (vinculo['ano_fim'].isnull()) 
+                                                    | 
+                                                    ((vinculo['ano_fim'] >= int(ano_inicio_sel)) & (vinculo['ano_fim'] <= int(ano_fim_sel)))
+                                                )
+                                                  ], 
+
+                                        column_config = vinculo_colum_config)
+            else: 
+                st.dataframe(vinculo.loc [(
+                                                ((vinculo['ano_fim'].isnull()) | ((vinculo['ano_fim'] >= int(ano_inicio_sel)) & (vinculo['ano_fim'] <= int(ano_fim_sel))))
+                                                )], 
+                                        column_config = vinculo_todos_colum_config)
+        else:
+            if docente_sel != 'Todos':
+                st.dataframe(vinculo.loc [ (vinculo['nome'] == docente_sel) 
+                                                & ((vinculo['ano_fim'].isnull()) | ((vinculo['ano_fim'] >= int(ano_inicio_sel)) & (vinculo['ano_fim'] <= int(ano_fim_sel))))
+                                                & (vinculo['tipo'] == tipo_vinc )], 
+                                        column_config = vinculo_colum_config)
+            else: 
+                st.dataframe(vinculo.loc [ ((vinculo['ano_fim'].isnull()) | ((vinculo['ano_fim'] >= int(ano_inicio_sel)) & (vinculo['ano_fim'] <= int(ano_fim_sel))))
+                                           & (vinculo['tipo'] == tipo_vinc)], 
+                                        column_config = vinculo_todos_colum_config)
+
     with download:
         
         with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
@@ -283,7 +389,24 @@ def main():
                                                 & (orientacao['ano'] <= int(ano_fim_sel)) 
                                                 & (orientacao['tipo'] == filtro_ori)].to_excel(writer, sheet_name='Orientação')
                 
-                
+            if docente_sel != 'Todos':            
+                projeto.loc [ (projeto['nome'] == docente_sel) & 
+                                            (projeto['ano_fim'].isnull()) 
+                                            | 
+                                            ((projeto['ano_fim'] >= int(ano_inicio_sel))
+                                             &
+                                            (projeto['ano_fim'] <= int(ano_fim_sel))
+                              )].to_excel(writer, sheet_name='Projetos')
+                                    
+            else: 
+                projeto.loc [  (projeto['ano_fim'].isnull()) 
+                                | 
+                                ((projeto['ano_fim'] >= int(ano_inicio_sel))
+                                    &
+                                (projeto['ano_fim'] <= int(ano_fim_sel))
+                                    )].to_excel(writer, sheet_name='Projetos')
+                                        
+            
             #tecnica.to_excel(writer, sheet_name='Técnica')
             if docente_sel != 'Todos':
                 tecnica.loc [ (tecnica['nome'] == docente_sel) 
@@ -292,6 +415,19 @@ def main():
             else: 
                 tecnica.loc [ (tecnica['ano'] >= int(ano_inicio_sel) )
                                             & (tecnica['ano'] <= int(ano_fim_sel) )].to_excel(writer, sheet_name='Técnica')
+
+            if docente_sel != 'Todos':
+                vinculo.loc [ (vinculo['nome'] == docente_sel) 
+                                                & 
+                                                (
+                                                    (vinculo['ano_fim'].isnull()) 
+                                                    | 
+                                                    ((vinculo['ano_fim'] >= int(ano_inicio_sel)) & (vinculo['ano_fim'] <= int(ano_fim_sel)))
+                                                )].to_excel(writer, sheet_name='Vínculos')
+            else: 
+                vinculo.loc [(((vinculo['ano_fim'].isnull()) | ((vinculo['ano_fim'] >= int(ano_inicio_sel)) & (vinculo['ano_fim'] <= int(ano_fim_sel))))
+                                                )].to_excel(writer, sheet_name='Vínculos')
+                                        
 
             # Close the Pandas Excel writer and output the Excel file to the buffer
             writer.close()
