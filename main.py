@@ -103,7 +103,8 @@ orientacao_colum_config = {
     'instituicao': 'Instituição', 
     'curso': 'Curso',
     'status': 'Status',
-    'natureza' : None    
+    'natureza' : None,
+    'tipo_orientacao': 'Tipo Orientação'   
 }
 
 orientacao_todos_colum_config = {
@@ -116,7 +117,8 @@ orientacao_todos_colum_config = {
     'instituicao': 'Instituição', 
     'curso': 'Curso',
     'status': 'Status',
-    'natureza' : None    
+    'natureza' : None,
+    'tipo_orientacao': 'Tipo Orientação'
 }
 
 projeto_colum_config = {
