@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 import math
+from dataframe_format import *
 
 buffer = io.BytesIO()
 
@@ -11,169 +12,6 @@ docente_sel = 'Alexandre César Muniz de Oliveira'
 ano_inicio_sel = 2019
 ano_fim_sel = 2022
 
-producao_periodico_colulm_config = {
-    'id_docente': None,
-    'nome': None, 
-    'titulo': 'Título', 
-    'tipo': None,
-    'issn_ou_sigla': 'ISSN',
-    'nome_local': 'Periódico',
-    'ano': 'Ano',
-    'qualis': 'Qualis', 
-    'natureza': None,
-    'percentile_ou_h5': 'Percentile', 
-    'autores': None, 
-    'doi': None
-}
-
-producao_evento_colulm_config = {
-    'id_docente': None,
-    'nome': None, 
-    'titulo': 'Título', 
-    'tipo': None,
-    'issn_ou_sigla': 'SIGLA',
-    'nome_local': 'Conferência',
-    'ano': 'Ano',
-    'qualis': 'Qualis', 
-    'natureza': None,
-    'percentile_ou_h5': 'H5', 
-    'autores': None, 
-    'doi': None
-}
-
-producao_periodico_todos_colulm_config = {
-    'id_docente': None,
-    'nome': 'Docente', 
-    'titulo': 'Título', 
-    'tipo': None,
-    'issn_ou_sigla': 'ISSN',
-    'nome_local': 'Periódico',
-    'ano': 'Ano',
-    'qualis': 'Qualis', 
-    'natureza': None,
-    'percentile_ou_h5': 'Percentile', 
-    'autores': None, 
-    'doi': None
-}
-
-producao_evento_todos_colulm_config = {
-    'id_docente': None,
-    'nome': 'Todos', 
-    'titulo': 'Título', 
-    'tipo': None,
-    'issn_ou_sigla': 'SIGLA',
-    'nome_local': 'Conferência',
-    'ano': 'Ano',
-    'qualis': 'Qualis', 
-    'natureza': None,
-    'percentile_ou_h5': 'H5', 
-    'autores': None, 
-    'doi': None
-}
-
-tecnica_colum_config = {
-    'id_docente': None,
-    'nome': None,     
-    'tipo': 'Tipo',
-    'titulo': 'Título', 
-    'ano': 'Ano',
-    'financiadora': 'Financiadora', 
-    'outras_informacoes': None,
-    'autores': None
-}
-
-tecnica_todos_colum_config = {
-    'id_docente': None,
-    'nome': 'Docente',     
-    'tipo': 'Tipo',
-    'titulo': 'Título', 
-    'ano': 'Ano',
-    'financiadora': 'Financiadora', 
-    'outras_informacoes': None,
-    'autores': None
-}
-
-orientacao_colum_config = {
-    'id_docente': None,
-    'nome': None,     
-    'tipo': 'Tipo',
-    'discente': 'Discente', 
-    'titulo': 'Titulo', 
-    'ano': 'Ano',
-    'instituicao': 'Instituição', 
-    'curso': 'Curso',
-    'status': 'Status',
-    'natureza' : None,
-    'tipo_orientacao': 'Tipo Orientação'   
-}
-
-orientacao_todos_colum_config = {
-    'id_docente': None,
-    'nome': 'Docente',     
-    'tipo': 'Tipo',
-    'discente': 'Discente', 
-    'titulo': 'Titulo', 
-    'ano': 'Ano',
-    'instituicao': 'Instituição', 
-    'curso': 'Curso',
-    'status': 'Status',
-    'natureza' : None,
-    'tipo_orientacao': 'Tipo Orientação'
-}
-
-projeto_colum_config = {
-    "id_docente": None, 
-    "nome": None,
-    "titulo": "Título", 
-    "ano_inicio": "Início",
-    "ano_fim": "Fim", 
-    "situacao": None,
-    "natureza": "Natureza", 
-    "qtd_graduacao": None, 
-    "qtd_especializacao": None, 
-    "qtd_mestrado": None, 
-    "qtd_doutorado": None, 
-    "integrantes": None, 
-    "financiador": "Financiadora", 
-    "responsavel": "Coord."
-}
-
-projeto_todos_colum_config = {
-    "id_docente": None, 
-    "nome": "Docente",
-    "titulo": "Título", 
-    "ano_inicio": "Início",
-    "ano_fim": "Fim", 
-    "situacao": None,
-    "natureza": "Natureza", 
-    "qtd_graduacao": None, 
-    "qtd_especializacao": None, 
-    "qtd_mestrado": None, 
-    "qtd_doutorado": None, 
-    "integrantes": None, 
-    "financiador": "Financiadora", 
-    "responsavel": "Coord."
-}
-
-vinculo_colum_config = {
-    "id_docente":None, 
-    "nome": None, 
-    "tipo": "Tipo",
-    "nome_instituicao": "Título", 
-    "ano_inicio": "Ano Início",
-    "ano_fim": "Ano Fim",
-    "outras_informacoes": "Outras Informações"
-}
-
-vinculo_todos_colum_config = {
-    "id_docente":None, 
-    "nome": "Docente", 
-    "tipo": "Tipo",
-    "nome_instituicao": "Título", 
-    "ano_inicio": "Ano Início",
-    "ano_fim": "Ano Fim",
-    "outras_informacoes": "Outras Informações"
-}
 
 @st.cache_data
 def loadData():  
@@ -197,51 +35,52 @@ def main():
         docente_sel = st.selectbox("Selecione um Docente:",options=(docentes.nome))            
     with c2: 
         ano_inicio_sel = st.text_input("Ano inicial", value="2019")
-        
+     
     with c3:
         ano_fim_sel = st.text_input("Ano final", value="2022")
 
 
     #dashboard, 
-    prod_tab, ori_tab, proj_tab, tec_tab, vinc_tab, download = st.tabs(['Produção', 'Orientações', 'Projetos', 'Técnicas', 'Vinculos', 'Download'])
+    per_tab, eve_tab, ori_tab, proj_tab, tec_tab, vinc_tab, download = st.tabs(['Periódicos', 'Eventos', 'Orientações', 'Projetos', 'Técnicas', 'Vinculos', 'Download'])
         
 
-    with prod_tab:
-        st.write('Produção')
+    with per_tab:
+        st.write('Periódicos')
 
-        tipo_prod = st.radio("Tipo", options=['Periódicos', 'Eventos'], horizontal=True)
         if docente_sel != 'Todos':
-            if  tipo_prod == 'Periódicos':                
-                st.dataframe(producao.loc [ (producao['nome'] == docente_sel) 
-                                            & (producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) ) 
-                                            & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
-                                            | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))], 
-                                    column_config = producao_periodico_colulm_config)
-            else:
-                st.dataframe(producao.loc [ (producao['nome'] == docente_sel) 
-                                            & (producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) )                                         
-                                            & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )], 
-                                            column_config=producao_evento_colulm_config)
+            st.dataframe(producao.loc [ (producao['nome'] == docente_sel) 
+                                        & (producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) ) 
+                                        & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
+                                        | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))], 
+                                column_config = producao_periodico_colulm_config)
         else:
-            if  tipo_prod == 'Periódicos':                
-                st.dataframe(producao.loc [(producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) ) 
-                                            & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
-                                            | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))], 
-                                    column_config = producao_periodico_todos_colulm_config)
-            else:
-                st.dataframe(producao.loc [ (producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) )                                         
-                                            & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )], 
-                                            column_config=producao_evento_todos_colulm_config)
+            st.dataframe(producao.loc [(producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) ) 
+                                        & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
+                                        | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))], 
+                                column_config = producao_periodico_todos_colulm_config)
+    
+    with eve_tab:
+        st.write('Eventos')
+
+        if docente_sel != 'Todos':
+            st.dataframe(producao.loc [ (producao['nome'] == docente_sel) 
+                                        & (producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) )                                         
+                                        & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )], 
+                                        column_config=producao_evento_colulm_config)
+        else:
+            st.dataframe(producao.loc [ (producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) )                                         
+                                        & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )], 
+                                        column_config=producao_evento_todos_colulm_config)
+
 
     with ori_tab:
         tipo_ori = st.radio("Tipo", 
                             options=['Todos', 'Tese', 'Dissertação', 'Especialização', 'IC', 'TCC',  'Outra'],                             
-                            horizontal=True)
-        
+                            horizontal=True)        
         if tipo_ori == 'Tese':
             filtro_ori = 'Tese de doutorado'
         if tipo_ori == 'Dissertação':
@@ -347,27 +186,27 @@ def main():
         
         with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
             if docente_sel != 'Todos':
-                if  tipo_prod == 'Periódicos':                
-                    producao.loc [ (producao['nome'] == docente_sel) 
-                                            & (producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) ) 
-                                            & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
-                                            | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))].to_excel(writer, sheet_name='Produção')
-                else:
-                    producao.loc [ (producao['nome'] == docente_sel) 
-                                            & (producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) )                                         
-                                            & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )].to_excel(writer, sheet_name='Produção')
+                
+                producao.loc [ (producao['nome'] == docente_sel) 
+                                        & (producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) ) 
+                                        & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
+                                        | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))].to_excel(writer, sheet_name='Periódicos')
+            
+                producao.loc [ (producao['nome'] == docente_sel) 
+                                        & (producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) )                                         
+                                        & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )].to_excel(writer, sheet_name='Eventos')
             else:
-                if  tipo_prod == 'Periódicos':                
-                    producao.loc [(producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) ) 
-                                            & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
-                                            | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))].to_excel(writer, sheet_name='Produção')
-                else:
-                    producao.loc [ (producao['ano'] >= int(ano_inicio_sel) )
-                                            & (producao['ano'] <= int(ano_fim_sel) )                                         
-                                            & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )].to_excel(writer, sheet_name='Produção')
+                           
+                producao.loc [(producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) ) 
+                                        & ((producao['tipo'] == 'ARTIGO-ACEITO-PARA-PUBLICACAO' ) 
+                                        | (producao['tipo'] == 'ARTIGO-PUBLICADO' ))].to_excel(writer, sheet_name='Periódicos')
+            
+                producao.loc [ (producao['ano'] >= int(ano_inicio_sel) )
+                                        & (producao['ano'] <= int(ano_fim_sel) )                                         
+                                        & (producao['tipo'] == 'TRABALHO-EM-EVENTOS' )].to_excel(writer, sheet_name='Eventos')
 
 
             #producao.to_excel(writer, sheet_name='Produção')
